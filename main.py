@@ -233,14 +233,17 @@ class FeastConnector:
         # Extract features and sent it to AI4HF Passport Server
         feast_features: List[feast_models.Variable] = root_object.entity.features
         for feast_feature in feast_features:
-            isMandatory: bool = (root_object.entity.datasetStats.numOfEntries ==
-                                 root_object.entity.datasetStats.featureStats[feast_feature.name].numOfNotNull)
+            feature_stat = root_object.entity.datasetStats.featureStats.get(feast_feature.name)
+            isMandatory: bool = (
+                    feature_stat is not None
+                    and root_object.entity.datasetStats.numOfEntries == feature_stat.numOfNotNull
+            )
             passport_feature: passport_models.Feature = passport_models.Feature(
                 featuresetId=created_feature_set.featuresetId,
                 title=feast_feature.name,
                 description=feast_feature.description,
-                dataType="Unknown",
-                featureType=feast_feature.dataType,
+                dataType=feast_feature.dataType,
+                isOutcome=False,
                 mandatory=isMandatory,
                 isUnique=False,
                 units="Unknown",
@@ -250,6 +253,32 @@ class FeastConnector:
                 lastUpdatedBy=user_id)
             created_feature = self.send_feature(passport_feature)
             print(f"Created feature: {created_feature}", flush=True)
+
+        # Extract outcomes and sent it to AI4HF Passport Server
+        feast_outcomes: List[feast_models.Variable] = root_object.entity.outcomes
+        for feast_outcome in feast_outcomes:
+            feature_stat = root_object.entity.datasetStats.featureStats.get(feast_outcome.name)
+            isMandatory: bool = (
+                    feature_stat is not None
+                    and root_object.entity.datasetStats.numOfEntries == feature_stat.numOfNotNull
+            )
+
+            passport_outcome: passport_models.Feature = passport_models.Feature(
+                            featuresetId=created_feature_set.featuresetId,
+                            title=feast_outcome.name,
+                            description=feast_outcome.description,
+                            dataType=feast_outcome.dataType,
+                            isOutcome=True,
+                            mandatory=isMandatory,
+                            isUnique=False,
+                            units="Unknown",
+                            equipment="Unknown",
+                            dataCollection="Unknown",
+                            createdBy=user_id,
+                            lastUpdatedBy=user_id)
+
+            created_outcome = self.send_feature(passport_outcome)
+            print(f"Created outcome: {created_outcome}", flush=True)
 
             # Extract feature dataset characteristics and sent it to AI4HF Passport Server
             feast_feature_stats: feast_models.Stats = root_object.entity.datasetStats.featureStats.get(
@@ -332,7 +361,7 @@ class FeastConnector:
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
         payload = {"featuresetId": feature.featuresetId, "title": feature.title,
                    "description": feature.description, "dataType": feature.dataType,
-                   "featureType": feature.featureType, "mandatory": feature.mandatory,
+                   "isOutcome": feature.isOutcome, "mandatory": feature.mandatory,
                    "isUnique": feature.isUnique, "units": feature.units,
                    "equipment": feature.equipment, "dataCollection": feature.dataCollection,
                    "createdBy": feature.createdBy, "lastUpdatedBy": feature.lastUpdatedBy}
@@ -430,7 +459,7 @@ class FeastConnector:
 
 if __name__ == "__main__":
     print("passport-onfhir-feast-connector has been started.")
-    passport_server_url = os.getenv("PASSPORT_SERVER_URL", "http://localhost:80/ai4hf/passport/api")
+    passport_server_url = os.getenv("PASSPORT_SERVER_URL", "http://localhost:8080")
     study_id = os.getenv("STUDY_ID", "initial_study")
     experiment_id = os.getenv("EXPERIMENT_ID", "initial_experiment")
     organization_id = os.getenv("ORGANIZATION_ID", "initial_organization")

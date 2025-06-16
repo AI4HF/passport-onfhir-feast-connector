@@ -46,7 +46,7 @@ class FeatureSet:
 
 
 class Feature:
-    def __init__(self, featuresetId: str, title: str, description: str, dataType: str, featureType: str,
+    def __init__(self, featuresetId: str, title: str, description: str, dataType: str, isOutcome: bool,
                  mandatory: bool, isUnique: bool, units: str, equipment: str, dataCollection: str,
                  createdAt: Optional[str] = None, createdBy: Optional[str] = None, lastUpdatedAt: Optional[str] = None,
                  lastUpdatedBy: Optional[str] = None, featureId: Optional[str] = None):
@@ -58,7 +58,7 @@ class Feature:
         self.title = title
         self.description = description
         self.dataType = dataType
-        self.featureType = featureType
+        self.isOutcome = isOutcome
         self.mandatory = mandatory
         self.isUnique = isUnique
         self.units = units
@@ -71,7 +71,7 @@ class Feature:
 
     def __str__(self):
         return json.dumps({"featureId": self.featureId, "featuresetId": self.featuresetId, "title": self.title,
-                           "description": self.description, "dataType": self.dataType, "featureType": self.featureType,
+                           "description": self.description, "dataType": self.dataType, "isOutcome": self.isOutcome,
                            "mandatory": self.mandatory, "isUnique": self.isUnique, "units": self.units,
                            "equipment": self.equipment, "dataCollection": self.dataCollection,
                            "createdAt": self.createdAt,
