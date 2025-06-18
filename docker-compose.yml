@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  passport-onfhir-feast-connector:
+    image: srdc/passport-onfhir-feast-connector:latest
+    environment:
+      PASSPORT_SERVER_URL: "http://passport-nginx:80/ai4hf/passport/api"
+      STUDY_ID: "initial_study"
+      EXPERIMENT_ID: "initial_experiment"
+      ORGANIZATION_ID: "initial_organization"
+      USERNAME: "data_engineer"
+      PASSWORD: "data_engineer"
+      FEAST_URL: "http://host.docker.internal:8086"
+      DATASET_ID: "318e10a9-c579-4e8c-ad2e-47df377740f8"
+    networks:
+      - passport-network
+      - onfhir-feast-network
+
+networks:
+  passport-network:
+    name: passport-network
+    external: true
+  onfhir-feast-network:
+    name: onfhir-feast-network
+    external: true

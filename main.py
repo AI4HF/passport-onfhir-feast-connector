@@ -1,11 +1,10 @@
-import datetime
+from datetime import datetime
 import os
 import traceback
 from typing import List
 
 import jwt
 import requests
-from dateutil.parser import isoparse
 
 import feast_models
 import passport_models
@@ -17,7 +16,7 @@ class FeastConnector:
     """
 
     def __init__(self, passport_server_url: str, study_id: str, organization_id: str, experiment_id: str, username: str,
-                 password: str, feast_url: str, dataset_id: str, timestamp_file: str):
+                 password: str, feast_url: str, dataset_id: str):
         """
         Initialize the API client with authentication and study details.
         """
@@ -29,7 +28,6 @@ class FeastConnector:
         self.password = password
         self.feast_url = feast_url
         self.dataset_id = dataset_id
-        self.timestamp_file = timestamp_file
         self.token = self._authenticate()
 
     def _authenticate(self) -> str:
@@ -264,18 +262,18 @@ class FeastConnector:
             )
 
             passport_outcome: passport_models.Feature = passport_models.Feature(
-                            featuresetId=created_feature_set.featuresetId,
-                            title=feast_outcome.name,
-                            description=feast_outcome.description,
-                            dataType=feast_outcome.dataType,
-                            isOutcome=True,
-                            mandatory=isMandatory,
-                            isUnique=False,
-                            units="Unknown",
-                            equipment="Unknown",
-                            dataCollection="Unknown",
-                            createdBy=user_id,
-                            lastUpdatedBy=user_id)
+                featuresetId=created_feature_set.featuresetId,
+                title=feast_outcome.name,
+                description=feast_outcome.description,
+                dataType=feast_outcome.dataType,
+                isOutcome=True,
+                mandatory=isMandatory,
+                isUnique=False,
+                units="Unknown",
+                equipment="Unknown",
+                dataCollection="Unknown",
+                createdBy=user_id,
+                lastUpdatedBy=user_id)
 
             created_outcome = self.send_feature(passport_outcome)
             print(f"Created outcome: {created_outcome}", flush=True)
@@ -436,26 +434,6 @@ class FeastConnector:
 
         return passport_models.FeatureDatasetCharacteristic(**response_json)
 
-    def load_last_processed_timestamp(self):
-        if not os.path.exists(self.timestamp_file):
-            print(f"[INFO] Timestamp file not found, assuming first run.")
-            return None
-        try:
-            with open(self.timestamp_file, "r") as f:
-                content = f.read().strip()
-                return isoparse(content) if content else None
-        except Exception as e:
-            print(f"[WARN] Failed to read timestamp file: {e}")
-            return None
-
-    def save_last_processed_timestamp(self, ts: datetime):
-        try:
-            with open(self.timestamp_file, "w") as f:
-                f.write(ts.isoformat())
-            print(f"[INFO] Updated last processed timestamp: {ts.isoformat()}")
-        except Exception as e:
-            print(f"[ERROR] Failed to write timestamp file: {e}")
-
 
 if __name__ == "__main__":
     print("passport-onfhir-feast-connector has been started.")
@@ -467,21 +445,19 @@ if __name__ == "__main__":
     password = os.getenv("PASSWORD", "data_engineer")
     feast_url = os.getenv("FEAST_URL", "http://localhost:8086")
     dataset_id = os.getenv("DATASET_ID", "318e10a9-c579-4e8c-ad2e-47df377740f8")
-    timestamp_file = os.getenv("TIMESTAMP_FILE", "/data/last_processed_timestamp.txt")
     try:
         connector = FeastConnector(
             passport_server_url=passport_server_url,
             study_id=study_id,
             experiment_id=experiment_id,
             organization_id=organization_id,
-            username="data_engineer",
+            username=username,
             password=password,
             feast_url=feast_url,
-            dataset_id=dataset_id,
-            timestamp_file=timestamp_file
+            dataset_id=dataset_id
         )
 
         connector.fetch_and_send_dataset()
     except Exception as e:
-        print(f"[{datetime.now()}] CRON ERROR: {e}", flush=True)
+        print(f"[{datetime.now()}] ERROR: {e}", flush=True)
         print(traceback.format_exc(), flush=True)
