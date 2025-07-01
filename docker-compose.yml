@@ -5,11 +5,10 @@ services:
     image: srdc/passport-onfhir-feast-connector:latest
     environment:
       PASSPORT_SERVER_URL: "http://passport-nginx:80/ai4hf/passport/api"
-      STUDY_ID: "initial_study"
-      EXPERIMENT_ID: "initial_experiment"
-      ORGANIZATION_ID: "initial_organization"
-      USERNAME: "data_engineer"
-      PASSWORD: "data_engineer"
+      STUDY_ID: "0197a6f8-2b78-71e4-81c1-b7b6a744ece3"
+      EXPERIMENT_ID: "0197a6f9-1f49-74a5-ab8a-e64fae0ca141"
+      ORGANIZATION_ID: "0197a6f5-bb48-7855-b248-95697e913f22"
+      CONNECTOR_SECRET: "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5ZTFiZTExNi0yMzg1LTRlZDctYTBiOC01ZDc0NWNjYzllOGMifQ.eyJpYXQiOjE3NTEyNzA4MjgsImp0aSI6ImIxMWE5NGI1LWQ5MzItNDhiNC1iMjc4LWFkZjQ1ZDJjMTMxOCIsImlzcyI6Imh0dHA6Ly9rZXljbG9hazo4MDgwL3JlYWxtcy9BSTRIRi1BdXRob3JpemF0aW9uIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrOjgwODAvcmVhbG1zL0FJNEhGLUF1dGhvcml6YXRpb24iLCJzdWIiOiJkYXRhX3NjaWVudGlzdCIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJBSTRIRi1BdXRoIiwic2Vzc2lvbl9zdGF0ZSI6IjE3YzU2ZjhkLTljZmEtNDM2OC05MzQ4LTkzN2ZjY2QyMjY0ZCIsInNjb3BlIjoib2ZmbGluZV9hY2Nlc3MgcHJvZmlsZSBlbWFpbCIsInNpZCI6IjE3YzU2ZjhkLTljZmEtNDM2OC05MzQ4LTkzN2ZjY2QyMjY0ZCJ9.obYaa744bmJoQAFO-nh1sCwPKwArWaOUo9_a1I0Uzc--HBuTLy6oOJVmnVI62bxnMkqoYo97SYGlKGKwVStz5g"
       FEAST_URL: "http://host.docker.internal:8086"
       DATASET_ID: "318e10a9-c579-4e8c-ad2e-47df377740f8"
     networks:

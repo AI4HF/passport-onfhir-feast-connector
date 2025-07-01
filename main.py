@@ -15,8 +15,8 @@ class FeastConnector:
     Feast Connector that fetches data from onFHIR Feast Server and sent them into the AI4HF Passport Server.
     """
 
-    def __init__(self, passport_server_url: str, study_id: str, organization_id: str, experiment_id: str, username: str,
-                 password: str, feast_url: str, dataset_id: str):
+    def __init__(self, passport_server_url: str, study_id: str, organization_id: str, experiment_id: str, connector_secret: str,
+                 feast_url: str, dataset_id: str):
         """
         Initialize the API client with authentication and study details.
         """
@@ -24,8 +24,7 @@ class FeastConnector:
         self.study_id = study_id
         self.organization_id = organization_id
         self.experiment_id = experiment_id
-        self.username = username
-        self.password = password
+        self.connector_secret = connector_secret
         self.feast_url = feast_url
         self.dataset_id = dataset_id
         self.token = self._authenticate()
@@ -34,14 +33,9 @@ class FeastConnector:
         """
         Authenticate with login endpoint and retrieve an access token.
         """
-        auth_url = f"{self.passport_server_url}/user/login"
+        auth_url = f"{self.passport_server_url}/user/connector/login"
 
-        data = {
-            "username": self.username,
-            "password": self.password
-        }
-
-        response = requests.post(auth_url, json=data)
+        response = requests.post(auth_url, data=self.connector_secret)
         response.raise_for_status()
         return response.json().get("access_token")
 
@@ -438,11 +432,10 @@ class FeastConnector:
 if __name__ == "__main__":
     print("passport-onfhir-feast-connector has been started.")
     passport_server_url = os.getenv("PASSPORT_SERVER_URL", "http://localhost:8080")
-    study_id = os.getenv("STUDY_ID", "initial_study")
-    experiment_id = os.getenv("EXPERIMENT_ID", "initial_experiment")
-    organization_id = os.getenv("ORGANIZATION_ID", "initial_organization")
-    username = os.getenv("USERNAME", "data_engineer")
-    password = os.getenv("PASSWORD", "data_engineer")
+    study_id = os.getenv("STUDY_ID", "0197a6f8-2b78-71e4-81c1-b7b6a744ece3")
+    experiment_id = os.getenv("EXPERIMENT_ID", "0197a6f9-1f49-74a5-ab8a-e64fae0ca141")
+    organization_id = os.getenv("ORGANIZATION_ID", "0197a6f5-bb48-7855-b248-95697e913f22")
+    connector_secret = os.getenv("CONNECTOR_SECRET", "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5ZTFiZTExNi0yMzg1LTRlZDctYTBiOC01ZDc0NWNjYzllOGMifQ.eyJpYXQiOjE3NTEyNzA4MjgsImp0aSI6ImIxMWE5NGI1LWQ5MzItNDhiNC1iMjc4LWFkZjQ1ZDJjMTMxOCIsImlzcyI6Imh0dHA6Ly9rZXljbG9hazo4MDgwL3JlYWxtcy9BSTRIRi1BdXRob3JpemF0aW9uIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrOjgwODAvcmVhbG1zL0FJNEhGLUF1dGhvcml6YXRpb24iLCJzdWIiOiJkYXRhX3NjaWVudGlzdCIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJBSTRIRi1BdXRoIiwic2Vzc2lvbl9zdGF0ZSI6IjE3YzU2ZjhkLTljZmEtNDM2OC05MzQ4LTkzN2ZjY2QyMjY0ZCIsInNjb3BlIjoib2ZmbGluZV9hY2Nlc3MgcHJvZmlsZSBlbWFpbCIsInNpZCI6IjE3YzU2ZjhkLTljZmEtNDM2OC05MzQ4LTkzN2ZjY2QyMjY0ZCJ9.obYaa744bmJoQAFO-nh1sCwPKwArWaOUo9_a1I0Uzc--HBuTLy6oOJVmnVI62bxnMkqoYo97SYGlKGKwVStz5g")
     feast_url = os.getenv("FEAST_URL", "http://localhost:8086")
     dataset_id = os.getenv("DATASET_ID", "318e10a9-c579-4e8c-ad2e-47df377740f8")
     try:
@@ -451,8 +444,7 @@ if __name__ == "__main__":
             study_id=study_id,
             experiment_id=experiment_id,
             organization_id=organization_id,
-            username=username,
-            password=password,
+            connector_secret=connector_secret,
             feast_url=feast_url,
             dataset_id=dataset_id
         )
