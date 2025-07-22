@@ -65,7 +65,7 @@ class FeastConnector:
         :param dataset_id: ID of the dataset to fetch.
         :return: RootObject representing the dataset.
         """
-        url = f"{self.feast_url}/onfhir-feast/api/Dataset/{dataset_id}"
+        url = f"{self.feast_url}/Dataset/{dataset_id}"
         headers = {"Content-Type": "application/json"}
         response = requests.get(url, headers=headers)
         response.raise_for_status()
