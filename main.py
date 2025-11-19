@@ -70,8 +70,7 @@ class FeastConnector:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        response_json = response.json()
-        entity_data = response_json["entity"]
+        entity_data = response.json()
 
         # Parse nested structures manually
         population = feast_models.Population(
@@ -246,6 +245,28 @@ class FeastConnector:
             created_feature = self.send_feature(passport_feature)
             print(f"Created feature: {created_feature}", flush=True)
 
+            feast_feature_stats = root_object.entity.datasetStats.featureStats.get(feast_feature.name)
+
+            if feast_feature_stats:
+                all_fields = {
+                    'numOfNotNull': feast_feature_stats.numOfNotNull,
+                    **feast_feature_stats.additional_stats
+                }
+
+                for k, v in all_fields.items():
+                    passport_feature_dataset_characteristic = passport_models.FeatureDatasetCharacteristic(
+                        datasetId=created_dataset.datasetId,
+                        featureId=created_feature.featureId,
+                        characteristicName=k,
+                        value=str(v),
+                        valueDataType=type(v).__name__
+                    )
+
+                    created_feature_dataset_characteristic = (
+                        self.send_feature_dataset_characteristic(passport_feature_dataset_characteristic)
+                    )
+                    print(f"Created feature dataset characteristic: {created_feature_dataset_characteristic}", flush=True)
+
         # Extract outcomes and sent it to AI4HF Passport Server
         feast_outcomes: List[feast_models.Variable] = root_object.entity.outcomes
         for feast_outcome in feast_outcomes:
@@ -272,20 +293,28 @@ class FeastConnector:
             created_outcome = self.send_feature(passport_outcome)
             print(f"Created outcome: {created_outcome}", flush=True)
 
-            # Extract feature dataset characteristics and sent it to AI4HF Passport Server
-            feast_feature_stats: feast_models.Stats = root_object.entity.datasetStats.featureStats.get(
-                created_feature.title)
-            all_fields = {'numOfNotNull': feast_feature_stats.numOfNotNull, **feast_feature_stats.additional_stats}
-            for k, v in all_fields.items():
-                passport_feature_dataset_characteristic: passport_models.FeatureDatasetCharacteristic = (
-                    passport_models.FeatureDatasetCharacteristic(datasetId=created_dataset.datasetId,
-                                                                 featureId=created_feature.featureId,
-                                                                 characteristicName=k,
-                                                                 value=str(v),
-                                                                 valueDataType=type(v).__name__))
-                created_feature_dataset_characteristic = self.send_feature_dataset_characteristic(
-                    passport_feature_dataset_characteristic)
-                print(f"Created feature dataset characteristic: {created_feature_dataset_characteristic}", flush=True)
+            feast_outcome_stats = root_object.entity.datasetStats.outcomeStats.get(feast_outcome.name)
+
+            if feast_outcome_stats:
+                all_fields = {
+                    'numOfNotNull': feast_outcome_stats.numOfNotNull,
+                    **feast_outcome_stats.additional_stats
+                }
+
+                for k, v in all_fields.items():
+                    passport_feature_dataset_characteristic = passport_models.FeatureDatasetCharacteristic(
+                        datasetId=created_dataset.datasetId,
+                        featureId=created_outcome.featureId,
+                        characteristicName=k,
+                        value=str(v),
+                        valueDataType=type(v).__name__
+                    )
+
+                    created_feature_dataset_characteristic = (
+                        self.send_feature_dataset_characteristic(passport_feature_dataset_characteristic)
+                    )
+                    print(f"Created feature dataset characteristic: {created_feature_dataset_characteristic}", flush=True)
+
 
         print("Data is sent to the AI4HF Passport Server!", flush=True)
 
